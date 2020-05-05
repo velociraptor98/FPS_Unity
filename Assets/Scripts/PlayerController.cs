@@ -21,7 +21,8 @@ public class PlayerController : MonoBehaviour
     [SerializeField]
     private LayerMask whatIsGround;
     private bool canDoubleJump;
-
+    [SerializeField] private GameObject bullet;
+    [SerializeField] private Transform firePoint;
     // Start is called before the first frame update
     void Start()
     {
@@ -73,6 +74,10 @@ public class PlayerController : MonoBehaviour
         Vector2 mouseInput = new Vector2(Input.GetAxisRaw("Mouse X"), Input.GetAxisRaw("Mouse Y")) * mouseSensitivity;
         transform.rotation = Quaternion.Euler(transform.rotation.eulerAngles.x,transform.rotation.eulerAngles.y+mouseInput.x,transform.rotation.eulerAngles.z);
         camera.rotation = Quaternion.Euler(camera.rotation.eulerAngles + new Vector3(-mouseInput.y, 0.0f, 0.0f));
+        if(Input.GetButtonDown("Fire1"))
+        {
+            Instantiate(bullet,firePoint.position,firePoint.rotation);
+        }
         anim.SetFloat("MoveSpeed",moveInput.magnitude);
         anim.SetBool("OnGround", canJump);
     }
