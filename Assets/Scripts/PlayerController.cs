@@ -76,6 +76,16 @@ public class PlayerController : MonoBehaviour
         camera.rotation = Quaternion.Euler(camera.rotation.eulerAngles + new Vector3(-mouseInput.y, 0.0f, 0.0f));
         if(Input.GetButtonDown("Fire1"))
         {
+            RaycastHit hit;
+            if(Physics.Raycast(camera.transform.position,camera.forward,out hit,50.0f))
+            {
+                if(Vector3.Distance(camera.transform.position,hit.point)>2.0f)
+                    firePoint.LookAt(hit.point);
+            }
+            else
+            {
+                firePoint.LookAt(camera.position + (camera.forward * 30.0f));
+            }
             Instantiate(bullet,firePoint.position,firePoint.rotation);
         }
         anim.SetFloat("MoveSpeed",moveInput.magnitude);

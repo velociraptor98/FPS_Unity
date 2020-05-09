@@ -7,6 +7,7 @@ public class BulletController : MonoBehaviour
     // Start is called before the first frame update
     [SerializeField] private float speed = 18.0f;
     [SerializeField] private float lifeTime;
+    [SerializeField] private GameObject impact;
     private Rigidbody rg;
     void Start()
     {
@@ -19,7 +20,6 @@ public class BulletController : MonoBehaviour
         if (rg)
         {
             rg.velocity = transform.forward * speed;
-            print("in rg");
         }
         lifeTime -= Time.deltaTime;
         if(lifeTime<=0)
@@ -29,6 +29,11 @@ public class BulletController : MonoBehaviour
     }
     private void OnTriggerEnter(Collider other)
     {
+        if(other.gameObject.CompareTag("Enemy"))
+        {
+            Destroy(other.gameObject);
+        }
         Destroy(this.gameObject);
+        Instantiate(impact, transform.position + (transform.forward * -(speed * Time.deltaTime)), transform.rotation);
     }
 }
