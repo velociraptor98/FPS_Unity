@@ -8,6 +8,7 @@ public class BulletController : MonoBehaviour
     [SerializeField] private float speed = 18.0f;
     [SerializeField] private float lifeTime;
     [SerializeField] private GameObject impact;
+    [SerializeField] private bool canDamageEnemy,canDamagePlayer;
     private Rigidbody rg;
     void Start()
     {
@@ -29,9 +30,14 @@ public class BulletController : MonoBehaviour
     }
     private void OnTriggerEnter(Collider other)
     {
-        if(other.gameObject.CompareTag("Enemy"))
+        if(other.gameObject.CompareTag("Enemy") && canDamageEnemy)
         {
-            Destroy(other.gameObject);
+            other.gameObject.GetComponent<EnemyMovement>().Damage();
+        }
+        if(other.gameObject.CompareTag("Player") && canDamagePlayer)
+        {
+            // TODO : ADD PLAYER HEALTH SYSTEM
+            print("Player Hit");
         }
         Destroy(this.gameObject);
         Instantiate(impact, transform.position + (transform.forward * -(speed * Time.deltaTime)), transform.rotation);

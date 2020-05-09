@@ -4,6 +4,8 @@ using UnityEngine;
 
 public class PlayerController : MonoBehaviour
 {
+
+    public static PlayerController instance;
     private Animator anim;
     [SerializeField] private float playerSpeed = 8.0f;
     [SerializeField] private float gravityModifier = 2.0f;
@@ -23,6 +25,10 @@ public class PlayerController : MonoBehaviour
     private bool canDoubleJump;
     [SerializeField] private GameObject bullet;
     [SerializeField] private Transform firePoint;
+    private void Awake()
+    {
+        instance = this;
+    }
     // Start is called before the first frame update
     void Start()
     {
