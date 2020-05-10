@@ -34,6 +34,10 @@ public class BulletController : MonoBehaviour
         {
             other.gameObject.GetComponent<EnemyMovement>().Damage();
         }
+        if(other.gameObject.CompareTag("HeadShot") &&canDamageEnemy)
+        {
+            other.transform.parent.GetComponent<EnemyMovement>().Damage(3);
+        }
         if(other.gameObject.CompareTag("Player") && canDamagePlayer)
         {
             // TODO : ADD PLAYER HEALTH SYSTEM
