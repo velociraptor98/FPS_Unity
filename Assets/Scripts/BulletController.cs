@@ -41,7 +41,7 @@ public class BulletController : MonoBehaviour
         if(other.gameObject.CompareTag("Player") && canDamagePlayer)
         {
             // TODO : ADD PLAYER HEALTH SYSTEM
-            print("Player Hit");
+            PlayerHealth.instance.Damage(10);
         }
         Destroy(this.gameObject);
         Instantiate(impact, transform.position + (transform.forward * -(speed * Time.deltaTime)), transform.rotation);
