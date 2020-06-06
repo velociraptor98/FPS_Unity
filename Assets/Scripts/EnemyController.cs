@@ -21,7 +21,7 @@ public class EnemyController : MonoBehaviour
     [SerializeField] private Animator anim;
     private float fireCount;
     private Vector3 targetPoint;
-    [SerializeField] private float waitBetweenShots=2.0f, shotWaitCounter,timeToShoot = 1.0f,shootTimeCounter; 
+    [SerializeField] private float waitBetweenShots=1.0f, shotWaitCounter,timeToShoot = 0.5f,shootTimeCounter; 
     void Start()
     {
         keepChaseTime = 5.0f;
