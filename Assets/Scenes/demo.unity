@@ -2358,6 +2358,8 @@ GameObject:
   serializedVersion: 6
   m_Component:
   - component: {fileID: 1379489224}
+  - component: {fileID: 1379489225}
+  - component: {fileID: 1379489226}
   m_Layer: 0
   m_Name: BouncePad
   m_TagString: Untagged
@@ -2373,13 +2375,39 @@ Transform:
   m_PrefabAsset: {fileID: 0}
   m_GameObject: {fileID: 1379489223}
   m_LocalRotation: {x: 0, y: 0, z: 0, w: 1}
-  m_LocalPosition: {x: 0, y: 0, z: 0}
+  m_LocalPosition: {x: 0, y: 0, z: 1.37}
   m_LocalScale: {x: 1, y: 1, z: 1}
   m_Children:
   - {fileID: 863585830}
   m_Father: {fileID: 0}
   m_RootOrder: 15
   m_LocalEulerAnglesHint: {x: 0, y: 0, z: 0}
+--- !u!65 &1379489225
+BoxCollider:
+  m_ObjectHideFlags: 0
+  m_CorrespondingSourceObject: {fileID: 0}
+  m_PrefabInstance: {fileID: 0}
+  m_PrefabAsset: {fileID: 0}
+  m_GameObject: {fileID: 1379489223}
+  m_Material: {fileID: 0}
+  m_IsTrigger: 1
+  m_Enabled: 1
+  serializedVersion: 2
+  m_Size: {x: 4.141079, y: 1, z: 4.7098217}
+  m_Center: {x: -12.7644615, y: 1.5, z: -23.855087}
+--- !u!114 &1379489226
+MonoBehaviour:
+  m_ObjectHideFlags: 0
+  m_CorrespondingSourceObject: {fileID: 0}
+  m_PrefabInstance: {fileID: 0}
+  m_PrefabAsset: {fileID: 0}
+  m_GameObject: {fileID: 1379489223}
+  m_Enabled: 1
+  m_EditorHideFlags: 0
+  m_Script: {fileID: 11500000, guid: d8d883b276523c54c8cd2a92beb49e90, type: 3}
+  m_Name: 
+  m_EditorClassIdentifier: 
+  bounceForce: 20
 --- !u!1 &1435596539
 GameObject:
   m_ObjectHideFlags: 0
@@ -3933,6 +3961,16 @@ PrefabInstance:
   m_Modification:
     m_TransformParent: {fileID: 0}
     m_Modifications:
+    - target: {fileID: 1989172212369571745, guid: 66e17b3b01cd4bb42a57337cb73c78f4,
+        type: 3}
+      propertyPath: m_LocalScale.z
+      value: -0.25
+      objectReference: {fileID: 0}
+    - target: {fileID: 1989172214207739778, guid: 66e17b3b01cd4bb42a57337cb73c78f4,
+        type: 3}
+      propertyPath: m_LocalScale.z
+      value: 1
+      objectReference: {fileID: 0}
     - target: {fileID: 2355488440420539216, guid: 66e17b3b01cd4bb42a57337cb73c78f4,
         type: 3}
       propertyPath: m_Name
@@ -3992,6 +4030,11 @@ PrefabInstance:
         type: 3}
       propertyPath: m_LocalEulerAnglesHint.z
       value: 0
+      objectReference: {fileID: 0}
+    - target: {fileID: 2355488440420539219, guid: 66e17b3b01cd4bb42a57337cb73c78f4,
+        type: 3}
+      propertyPath: m_LocalScale.z
+      value: 1
       objectReference: {fileID: 0}
     m_RemovedComponents: []
   m_SourcePrefab: {fileID: 100100000, guid: 66e17b3b01cd4bb42a57337cb73c78f4, type: 3}

@@ -32,6 +32,8 @@ public class PlayerController : MonoBehaviour
     private Vector3 startPos;
     private float adsSpeed = 2.0f;
     public GameObject muzzle;
+    private float bounceAmount;
+    private bool bounce;
     private void Awake()
     {
         instance = this;
@@ -87,6 +89,13 @@ public class PlayerController : MonoBehaviour
             {
                 moveInput.y = jumpHeight;
                 canDoubleJump = false;
+            }
+
+            if(bounce)
+            {
+                bounce = false;
+                moveInput.y = bounceAmount;
+                canDoubleJump = true;
             }
             if (character)
             {
@@ -171,5 +180,10 @@ public class PlayerController : MonoBehaviour
         ActiveGun.gameObject.SetActive(true);
         firePoint = ActiveGun.FirePoint;
         UIController.instance.ammoText.text = "Ammo: " + ActiveGun.currentAmmo;
+    }
+    public void Bounce(float bounceForce)
+    {
+        bounceAmount = bounceForce;
+        bounce = true;
     }
 }
