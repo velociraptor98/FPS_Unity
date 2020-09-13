@@ -8,6 +8,7 @@ public class UIController : MonoBehaviour
     public static UIController instance;
     [SerializeField] public Slider slider;
     [SerializeField] public Text playerHealth,ammoText;
+    public GameObject PauseScreen;
     // Start is called before the first frame update
     private void Awake()
     {

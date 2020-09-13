@@ -16,6 +16,13 @@ public class GameManager : MonoBehaviour
     {
         Cursor.lockState = CursorLockMode.Locked;
     }
+    private void Update()
+    {
+        if(Input.GetKeyDown(KeyCode.Escape))
+        {
+            PauseUnpause();
+        }
+    }
     public void OnPlayerDead()
     {
         StartCoroutine(Restart());
@@ -24,5 +31,20 @@ public class GameManager : MonoBehaviour
     {
         yield return new WaitForSeconds(GameRestartTimer);
         SceneManager.LoadScene(SceneManager.GetActiveScene().name);
+    }
+    public void PauseUnpause()
+    {
+        if(UIController.instance.PauseScreen.activeInHierarchy)
+        {
+            UIController.instance.PauseScreen.SetActive(false);
+            Cursor.lockState = CursorLockMode.Locked;
+            Time.timeScale = 1f;
+        }
+        else
+        {
+            UIController.instance.PauseScreen.SetActive(true);
+            Cursor.lockState = CursorLockMode.None;
+            Time.timeScale = 0f;
+        }
     }
 }
