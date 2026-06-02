@@ -1,9 +1,7 @@
 ﻿using System.Collections;
 using System.Collections.Generic;
-using UnityEditor.Timeline;
 using UnityEngine.AI;
 using UnityEngine;
-using UnityEngine.Rendering;
 
 public class EnemyController : MonoBehaviour
 {
