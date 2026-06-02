@@ -1,158 +1,212 @@
-﻿using System.Collections;
 using System.Collections.Generic;
 using UnityEngine;
+using UnityEngine.InputSystem;
 
 public class PlayerController : MonoBehaviour
 {
-
     public static PlayerController instance;
-    private Animator anim;
-    [SerializeField] private float playerSpeed = 8.0f;
+
+    [SerializeField] private float playerSpeed    = 8.0f;
     [SerializeField] private float gravityModifier = 2.0f;
-    [SerializeField] private float jumpHeight = 2.0f;
-    [SerializeField] private int currentGun;
-    private CharacterController character;
-    private Vector3 moveInput;
-    [SerializeField]private Transform camera;
-    [SerializeField] private float mouseSensitivity = 2;
-    [SerializeField] private bool isMouseInverted = false;
-    private bool canJump;
-    [SerializeField]
-    private Transform groundCheckPoint;
-    [SerializeField]
-    private float runSpeed = 15.0f;
-    [SerializeField]
-    private LayerMask whatIsGround;
-    private bool canDoubleJump;
-    //[SerializeField] private GameObject bullet;
+    [SerializeField] private float jumpHeight      = 2.0f;
+    [SerializeField] private int   currentGun;
+    [SerializeField] private Transform camera;
+    [SerializeField] private float mouseSensitivity = 2f;
+    [SerializeField] private bool  isMouseInverted  = false;
+    [SerializeField] private Transform groundCheckPoint;
+    [SerializeField] private float runSpeed = 15.0f;
+    [SerializeField] private LayerMask whatIsGround;
     [SerializeField] private Transform firePoint;
-    [SerializeField]private Gun ActiveGun;
+    [SerializeField] private Gun ActiveGun;
     [SerializeField] private List<Gun> guns;
-    [SerializeField] private Transform ads,gunHolder;
-    private Vector3 startPos;
-    private float adsSpeed = 2.0f;
+    [SerializeField] private Transform ads, gunHolder;
+    [SerializeField] private InputActionAsset inputActions;
+
     public GameObject muzzle;
-    private float bounceAmount;
-    private bool bounce;
+
+    private Animator          anim;
+    private CharacterController character;
+    private Vector3           moveInput;
+    private Vector3           startPos;
+    private bool              canJump;
+    private bool              canDoubleJump;
+    private float             adsSpeed    = 2.0f;
+    private float             bounceAmount;
+    private bool              bounce;
+
+    private InputAction _moveAction;
+    private InputAction _lookAction;
+    private InputAction _jumpAction;
+    private InputAction _sprintAction;
+    private InputAction _fireAction;
+    private InputAction _adsAction;
+    private InputAction _switchGunAction;
+
     private void Awake()
     {
         instance = this;
+
+        var playerMap    = inputActions.FindActionMap("Player", throwIfNotFound: true);
+        _moveAction      = playerMap.FindAction("Move",      throwIfNotFound: true);
+        _lookAction      = playerMap.FindAction("Look",      throwIfNotFound: true);
+        _jumpAction      = playerMap.FindAction("Jump",      throwIfNotFound: true);
+        _sprintAction    = playerMap.FindAction("Sprint",    throwIfNotFound: true);
+        _fireAction      = playerMap.FindAction("Fire",      throwIfNotFound: true);
+        _adsAction       = playerMap.FindAction("ADS",       throwIfNotFound: true);
+        _switchGunAction = playerMap.FindAction("SwitchGun", throwIfNotFound: true);
     }
-    // Start is called before the first frame update
-    void Start()
+
+    private void OnEnable()
     {
-        anim = this.GetComponent<Animator>();
-        character = this.GetComponent<CharacterController>();
-       // currentGun = 0;
+        if (_moveAction == null) return;
+        _moveAction.Enable();
+        _lookAction.Enable();
+        _jumpAction.Enable();
+        _sprintAction.Enable();
+        _fireAction.Enable();
+        _adsAction.Enable();
+        _switchGunAction.Enable();
+    }
+
+    private void OnDisable()
+    {
+        if (_moveAction == null) return;
+        _moveAction.Disable();
+        _lookAction.Disable();
+        _jumpAction.Disable();
+        _sprintAction.Disable();
+        _fireAction.Disable();
+        _adsAction.Disable();
+        _switchGunAction.Disable();
+    }
+
+    private void Start()
+    {
+        anim      = GetComponent<Animator>();
+        character = GetComponent<CharacterController>();
+
         ActiveGun = guns[currentGun];
         ActiveGun.gameObject.SetActive(true);
         firePoint = ActiveGun.FirePoint;
-        startPos = gunHolder.localPosition;
+        startPos  = gunHolder.localPosition;
         UIController.instance.ammoText.text = "Ammo: " + ActiveGun.currentAmmo;
     }
 
-    // Update is called once per frame
-    void Update()
+    private void Update()
     {
-        if (!UIController.instance.PauseScreen.activeInHierarchy)
+        if (UIController.instance.PauseScreen.activeInHierarchy)
+            return;
+
+        HandleMovement();
+        HandleLook();
+        HandleShooting();
+        HandleADS();
+        HandleGunSwitch();
+
+        anim.SetFloat("MoveSpeed", moveInput.magnitude);
+        anim.SetBool("OnGround", canJump);
+    }
+
+    private void HandleMovement()
+    {
+        float yStore  = moveInput.y;
+
+        Vector2 moveVal = _moveAction.ReadValue<Vector2>();
+        moveInput = (transform.forward * moveVal.y) + (transform.right * moveVal.x);
+        moveInput.Normalize();
+        moveInput *= _sprintAction.IsPressed() ? runSpeed : playerSpeed;
+
+        moveInput.y  = yStore;
+        moveInput.y += Physics.gravity.y * gravityModifier * Time.deltaTime;
+
+        if (character.isGrounded)
+            moveInput.y = Physics.gravity.y * gravityModifier * Time.deltaTime;
+
+        canJump = Physics.OverlapSphere(groundCheckPoint.position, 0.25f, whatIsGround).Length > 0;
+        if (canJump)
+            canDoubleJump = false;
+
+        if (_jumpAction.WasPressedThisFrame() && canJump)
         {
-            float yStore = moveInput.y;
-            Vector3 vertMove = transform.forward * Input.GetAxis("Vertical");
-            Vector3 horMove = transform.right * Input.GetAxis("Horizontal");
-            moveInput = vertMove + horMove;
-            moveInput.Normalize();
-            if (Input.GetKey(KeyCode.LeftShift))
-            {
-                moveInput *= runSpeed;
-            }
-            else
-            {
-                moveInput *= playerSpeed;
-            }
-            moveInput.y = yStore;
-            moveInput.y += Physics.gravity.y * gravityModifier * Time.deltaTime;
-            if (character.isGrounded)
-            {
-                moveInput.y = Physics.gravity.y * gravityModifier * Time.deltaTime;
-            }
-            canJump = Physics.OverlapSphere(groundCheckPoint.position, 0.25f, whatIsGround).Length > 0;
-            if (canJump)
-            {
-                canDoubleJump = false;
-            }
-            if (Input.GetKeyDown(KeyCode.Space) && canJump)
-            {
-                moveInput.y = jumpHeight;
-                canDoubleJump = true;
-            }
-            else if (Input.GetKeyDown(KeyCode.Space) && canDoubleJump)
-            {
-                moveInput.y = jumpHeight;
-                canDoubleJump = false;
-            }
+            moveInput.y   = jumpHeight;
+            canDoubleJump = true;
+        }
+        else if (_jumpAction.WasPressedThisFrame() && canDoubleJump)
+        {
+            moveInput.y   = jumpHeight;
+            canDoubleJump = false;
+        }
 
-            if(bounce)
-            {
-                bounce = false;
-                moveInput.y = bounceAmount;
-                canDoubleJump = true;
-            }
-            if (character)
-            {
-                character.Move(moveInput * Time.deltaTime);
-            }
-            Vector2 mouseInput = new Vector2(Input.GetAxisRaw("Mouse X"), Input.GetAxisRaw("Mouse Y")) * mouseSensitivity;
-            transform.rotation = Quaternion.Euler(transform.rotation.eulerAngles.x, transform.rotation.eulerAngles.y + mouseInput.x, transform.rotation.eulerAngles.z);
-            camera.rotation = Quaternion.Euler(camera.rotation.eulerAngles + new Vector3(-mouseInput.y, 0.0f, 0.0f));
-            muzzle.SetActive(false);
-            if (Input.GetButtonDown("Fire1") && ActiveGun.fireCounter <= 0)
-            {
-                RaycastHit hit;
-                if (Physics.Raycast(camera.transform.position, camera.forward, out hit, 50.0f))
-                {
-                    if (Vector3.Distance(camera.transform.position, hit.point) > 2.0f)
-                        firePoint.LookAt(hit.point);
-                }
-                else
-                {
-                    firePoint.LookAt(camera.position + (camera.forward * 30.0f));
-                }
-                FireShot();
-            }
-            // auto fire repeater
-            if (Input.GetMouseButton(0) && ActiveGun.canAutoFire)
-            {
-                if (ActiveGun.fireCounter <= 0)
-                {
-                    FireShot();
-                }
-            }
-            if (Input.GetKeyDown(KeyCode.Tab))
-            {
-                SwitchGun();
-            }
+        if (bounce)
+        {
+            bounce        = false;
+            moveInput.y   = bounceAmount;
+            canDoubleJump = true;
+        }
 
-            if (Input.GetMouseButtonDown(1))
-            {
-                CameraController.instance.ZoomIn(ActiveGun.GetZoomAmount());
-            }
-            if (Input.GetMouseButton(1))
-            {
-                gunHolder.position = Vector3.MoveTowards(gunHolder.position, ads.position, adsSpeed * Time.deltaTime);
-            }
-            else
-            {
-                gunHolder.localPosition = Vector3.MoveTowards(gunHolder.localPosition, startPos, adsSpeed * Time.deltaTime);
-            }
-            if (Input.GetMouseButtonUp(1))
-            {
-                CameraController.instance.ZoomOut();
-            }
+        character.Move(moveInput * Time.deltaTime);
+    }
 
-            anim.SetFloat("MoveSpeed", moveInput.magnitude);
-            anim.SetBool("OnGround", canJump);
+    private void HandleLook()
+    {
+        // <Mouse>/delta returns raw pixels; 0.1f matches the old Input Manager's default scale
+        Vector2 look = _lookAction.ReadValue<Vector2>() * (mouseSensitivity * 0.1f);
+        transform.rotation = Quaternion.Euler(
+            transform.rotation.eulerAngles.x,
+            transform.rotation.eulerAngles.y + look.x,
+            transform.rotation.eulerAngles.z);
+
+        float pitchDelta = isMouseInverted ? look.y : -look.y;
+        camera.rotation  = Quaternion.Euler(camera.rotation.eulerAngles + new Vector3(pitchDelta, 0f, 0f));
+    }
+
+    private void HandleShooting()
+    {
+        muzzle.SetActive(false);
+
+        if (_fireAction.WasPressedThisFrame() && ActiveGun.fireCounter <= 0)
+        {
+            AimFirePoint();
+            FireShot();
+        }
+
+        if (_fireAction.IsPressed() && ActiveGun.canAutoFire && ActiveGun.fireCounter <= 0)
+            FireShot();
+    }
+
+    private void AimFirePoint()
+    {
+        if (Physics.Raycast(camera.transform.position, camera.forward, out RaycastHit hit, 50f))
+        {
+            if (Vector3.Distance(camera.transform.position, hit.point) > 2f)
+                firePoint.LookAt(hit.point);
+        }
+        else
+        {
+            firePoint.LookAt(camera.position + camera.forward * 30f);
         }
     }
+
+    private void HandleADS()
+    {
+        if (_adsAction.WasPressedThisFrame())
+            CameraController.instance.ZoomIn(ActiveGun.GetZoomAmount());
+
+        if (_adsAction.IsPressed())
+            gunHolder.position = Vector3.MoveTowards(gunHolder.position, ads.position, adsSpeed * Time.deltaTime);
+        else
+            gunHolder.localPosition = Vector3.MoveTowards(gunHolder.localPosition, startPos, adsSpeed * Time.deltaTime);
+
+        if (_adsAction.WasReleasedThisFrame())
+            CameraController.instance.ZoomOut();
+    }
+
+    private void HandleGunSwitch()
+    {
+        if (_switchGunAction.WasPressedThisFrame())
+            SwitchGun();
+    }
+
     public void FireShot()
     {
         if (ActiveGun.currentAmmo > 0)
@@ -164,26 +218,22 @@ public class PlayerController : MonoBehaviour
             muzzle.SetActive(true);
         }
     }
-    public Gun GetActiveGun()
-    {
-        return this.ActiveGun;
-    }
+
+    public Gun GetActiveGun() => ActiveGun;
+
     public void SwitchGun()
     {
         ActiveGun.gameObject.SetActive(false);
-        ++currentGun;
-        if(currentGun>2)
-        {
-            currentGun = 0;
-        }
-        ActiveGun = guns[currentGun];
+        currentGun = (currentGun + 1) % guns.Count;
+        ActiveGun  = guns[currentGun];
         ActiveGun.gameObject.SetActive(true);
-        firePoint = ActiveGun.FirePoint;
+        firePoint  = ActiveGun.FirePoint;
         UIController.instance.ammoText.text = "Ammo: " + ActiveGun.currentAmmo;
     }
+
     public void Bounce(float bounceForce)
     {
         bounceAmount = bounceForce;
-        bounce = true;
+        bounce       = true;
     }
 }

@@ -1,50 +1,51 @@
-﻿using System.Collections;
-using System.Collections.Generic;
 using UnityEngine;
 
 public class BulletController : MonoBehaviour
 {
-    // Start is called before the first frame update
     [SerializeField] private float speed = 18.0f;
     [SerializeField] private float lifeTime;
-    [SerializeField] private int DamageVal;
+    [SerializeField] private int damageValue;
     [SerializeField] private GameObject impact;
-    [SerializeField] private bool canDamageEnemy,canDamagePlayer;
-    private Rigidbody rg;
-    void Start()
+    [SerializeField] private bool canDamageEnemy;
+    [SerializeField] private bool canDamagePlayer;
+
+    private Rigidbody rb;
+
+    private void Awake()
     {
-        rg = this.GetComponent<Rigidbody>();
+        rb = GetComponent<Rigidbody>();
     }
 
-    // Update is called once per frame
-    void Update()
+    private void Update()
     {
-        if (rg)
+        if (rb != null)
         {
-            rg.velocity = transform.forward * speed;
+            rb.linearVelocity = transform.forward * speed;
         }
+
         lifeTime -= Time.deltaTime;
-        if(lifeTime<=0)
+        if (lifeTime <= 0)
         {
-            Destroy(this.gameObject);
+            Destroy(gameObject);
         }
     }
+
     private void OnTriggerEnter(Collider other)
     {
-        if(other.gameObject.CompareTag("Enemy") && canDamageEnemy)
+        if (other.CompareTag("Enemy") && canDamageEnemy)
         {
-            other.gameObject.GetComponent<EnemyMovement>().Damage(DamageVal);
+            other.GetComponent<EnemyMovement>().Damage(damageValue);
         }
-        if(other.gameObject.CompareTag("HeadShot") &&canDamageEnemy)
+        else if (other.CompareTag("HeadShot") && canDamageEnemy)
         {
-            other.transform.parent.GetComponent<EnemyMovement>().Damage(DamageVal*2);
+            other.transform.parent.GetComponent<EnemyMovement>().Damage(damageValue * 2);
         }
-        if(other.gameObject.CompareTag("Player") && canDamagePlayer)
+        else if (other.CompareTag("Player") && canDamagePlayer)
         {
-            // TODO : ADD PLAYER HEALTH SYSTEM
             PlayerHealth.instance.Damage(10);
         }
-        Destroy(this.gameObject);
-        Instantiate(impact, transform.position + (transform.forward * -(speed * Time.deltaTime)), transform.rotation);
+
+        Instantiate(impact, transform.position + transform.forward * -(speed * Time.deltaTime), transform.rotation);
+        Destroy(gameObject);
     }
 }

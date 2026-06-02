@@ -1,50 +1,71 @@
-﻿using System.Collections;
-using System.Collections.Generic;
+using System.Collections;
 using UnityEngine;
+using UnityEngine.InputSystem;
 using UnityEngine.SceneManagement;
 
 public class GameManager : MonoBehaviour
 {
-    // Start is called before the first frame update
     public static GameManager instance;
-    [SerializeField]private float GameRestartTimer = 3.0f;
+
+    [SerializeField] private float gameRestartTimer = 3.0f;
+    [SerializeField] private InputActionAsset inputActions;
+
+    private InputAction _pauseAction;
+
     private void Awake()
     {
-        instance = this;
+        instance     = this;
+        _pauseAction = inputActions.FindActionMap("UI", throwIfNotFound: true)
+                                   .FindAction("Pause", throwIfNotFound: true);
     }
-    void Start()
+
+    private void OnEnable()
+    {
+        if (_pauseAction == null) return;
+        _pauseAction.Enable();
+    }
+
+    private void OnDisable()
+    {
+        if (_pauseAction == null) return;
+        _pauseAction.Disable();
+    }
+
+    private void Start()
     {
         Cursor.lockState = CursorLockMode.Locked;
     }
+
     private void Update()
     {
-        if(Input.GetKeyDown(KeyCode.Escape))
-        {
+        if (_pauseAction.WasPressedThisFrame())
             PauseUnpause();
-        }
     }
+
     public void OnPlayerDead()
     {
         StartCoroutine(Restart());
     }
+
     private IEnumerator Restart()
     {
-        yield return new WaitForSeconds(GameRestartTimer);
+        yield return new WaitForSeconds(gameRestartTimer);
         SceneManager.LoadScene(SceneManager.GetActiveScene().name);
     }
+
     public void PauseUnpause()
     {
-        if(UIController.instance.PauseScreen.activeInHierarchy)
+        if (UIController.instance.PauseScreen.activeInHierarchy)
         {
             UIController.instance.PauseScreen.SetActive(false);
             Cursor.lockState = CursorLockMode.Locked;
-            Time.timeScale = 1f;
+            Time.timeScale   = 1f;
         }
         else
         {
             UIController.instance.PauseScreen.SetActive(true);
             Cursor.lockState = CursorLockMode.None;
-            Time.timeScale = 0f;
+            Time.timeScale   = 0f;
         }
     }
 }
